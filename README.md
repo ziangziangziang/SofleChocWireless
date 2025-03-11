@@ -1,81 +1,57 @@
-# Sofle Choc Wireless Keyboard
+# Build a Sofle Wireless Keyboard
 
-The Sofle Choc Wireless Keyboard is a revision of the Sofle Choc keyboard by [Brian Low](https://github.com/brianlow) with features that make it more suitable to building with wireless microcontrollers.
+The internet is an amazing trap. I was looking for an ergonomic keyboard to buy. And I ended up building one.
 
+This repository records my building log. This project is my first big embedded project. I hope the repository can be a good reference for people who want to build a wireless keyboard or a similar project.
 
-![Sofle Choc Wireless Keyboard](docs/images/sofle_choc_wireless_with_niceview.jpg)
-*The Sofle Choc Wireless Keyboard with an encoder and nice!view on the left half*
+The build recipe is based on the [Sofle Choc Wireless Keyboard](https://github.com/db-ok/SofleChocWireless). However, my demand is a bit different in the following ways:
 
---
---
+- palm rest.
+- joycon as a mouse.
+- traditional profile switches.
 
-The following 2 pictures are the same exact board:
-
-![Sofle Choc Wireless Keyboard with dual encoders and RGB LEDS](docs/images/sofle-choc-wireless-with-dual-encoders-rgb.jpg)
-  *(Above: the Sofle Choc Wireless Keyboard with RGB LEDs and dual encoders)*
-
-![Sofle Choc Wireless Keyboard with no encoders and RGB LEDS](docs/images/sofle-choc-wireless-no-encoders-rgb.jpg)
-  *(Above: The Sofle Choc Wireless Keyboard with RGB LEDs and no encoders)*
-
-The encoders in the first picture were hot-swapped for Choc switches in the second picture.
-This allows for more build flexibility to change up your build, and as an added bonus, you can test out different rotary encoder options without soldering them in until you find one that you like.
-
-## Disclaimer
-This is a prototype keyboard, so it comes with no guarantees. There may be changes to it in the future to fix problems or add features. That being said, it functions as intended for my own standards, so if you like the design, feel free to get a PCB made and build it for yourself!
-
-## Differences from Sofle Choc (wired) keyboard
-- Added power switch to connect/disconnect battery power to RAW pin of microcontroller
-- Added JST connector for battery connection
-- [nice!view](https://nicekeyboards.com/docs/nice-view/) display support *(still supports common OLED displays as well)*
-- Encoder can be swapped with a Choc switch on either half
-    - These can both be hot-swapped if Mill-Max sockets are installed
-- Added a bottom plate PCB to allow for more build options
-- Made a hole in the PCB for battery wire routing if needed
-- Position of the encoder is shifted down to allow room for a larger encoder knob
-- 1 additional RBG LED on each half under the encoder / choc switch position
-- Removed the TRRS jacks and related components
-- Changed the microcontroller pin connected to the RGB LED data line
-
-## Encoder Support
-The PCB supports a rotary encoder or a Choc switch in the same location on either half, and *either one can use Mill-Max sockets*. If you don't want to use Mill-Max sockets, you can hard-solder either a rotary encoder or a Choc switch into either side.
-
-## Display Support
-The PCB supports either a 4-pin OLED screen commonly found on DIY keyboards, or the 5-pin [nice!view](https://nicekeyboards.com/docs/nice-view/) low power usage display.
-
-## Firmware 
-
-Sofle Choc Wireless uses [ZMK firmware](https://zmk.dev/)
-
-Firmware-related info for display and LED features:
-  - This PCB has a chip select (CS) pin for the nice!view display that uses Arduino Digital 1 (D1 Pro Micro pin), which corresponds to P0.06/006 on the nice!nano. This is the default pin used by the nice!view, which makes it easier to configure. See build guide "Firmware and programming" section for more info on building firmware that supports the nice!view.
-  - The RGB LED pin is relocated to Arduino Digital 0 (D0 Pro Micro pin), which corresponds to P0.08/008 on the nice!nano
-
-### Example config repository
-There is a zmk-config example repository where each branch has a different combination of options (OLED, niceview, RGB) enabled:
-https://github.com/db-ok/zmk-config-soflechocwireless
+> I know I can get a prebuild one exactly satisfying my needs at around 100 dollars from Aliexpress. However I still want to make one just for learning, and for fun.
 
 
-## Build Guide
+## What makes the keyboard wireless
 
-Please read the entire build guide before ordering any parts, as there are some options to consider:
-
-[Build guide](docs/build_guide_choc_wireless.md)
+[Sofle Choc Wireless Keyboard](https://github.com/db-ok/SofleChocWireless) differs from the original [Sofle Choc Keyboard](https://github.com/josefadamcik/SofleKeyboard) in the framework. 
 
 
+| Feature | QMK | ZMK | 
+|---------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Primary Use Case | Wired and highly customizable mechanical keyboards. | Wireless (Bluetooth) keyboards with a focus on low-power efficiency. | | Wireless Support | Limited (e.g., via add-ons like Bluefruit or custom solutions). | Native Bluetooth Low Energy (BLE) support. | | Programming Language | C (with custom build system). | C (built on Zephyr RTOS for embedded systems). | | Configuration | Code-based (C, keymap.c) or GUI tools (VIA/QMK Configurator + JSON). | Declarative via Devicetree (DT) overlays and YAML keymaps. |
+| Hardware Support | Broad (AVR, ARM-based MCUs like STM32, RP2040). | Focused on ARM MCUs with BLE (e.g., Nordic nRF52 series). | 
+| Community & Ecosystem | Large, mature community with extensive documentation and forks. | Growing community, focused on wireless use cases. |
+| Power Management | Minimal (not optimized for battery life). | Advanced (deep sleep, peripheral power control for long battery life). | | Licensing | GPL-2.0+ (open source, copyleft). | MIT (permissive open source). |
+| Example Boards | Planck, Lily58, Drop CTRL, Keebio Quefrency. | Nice!Nano-based builds (e.g., Corne, Kyria), Wireless Split keyboards. |
 
-## From the original Sofle repo:
+We don't look for more advanced/suitable frameworks in this repository. From this comparision we know our framework of choice should be ZMK. Simply because I like wireless. My wishlist was generously fulfilled by [ZMK docs](https://zmk.dev/docs)
 
-Original SofleKeyboard repo: https://github.com/josefadamcik/SofleKeyboard
+> One thought: ZMK supports setups where a keyboard is split into two **or more** physical parts. How cool is that if I can include paddle(s) in the keyboard?
 
-Sofle is 6×4+5 keys column-staggered split keyboard with encoder support. 
+```mermaid
+architecture-beta
+group keyboard(server)[split keyboards]
+  service central(server)[central] in keyboard
+  service p1(server)[peripheral 1] in keyboard
+  service p2(server)[peripheral 2] in keyboard
 
-Based on [Lily58](https://github.com/kata0510/Lily58), [Corne](https://github.com/foostan/crkbd) and [Helix](https://github.com/MakotoKurauchi/helix) keyboards.
+  central:L -- R:p1
+  central:B -- T:p2
+  
+service computer(server)[computer]
+central: R -- L:computer
 
-SofleKeyboard was created by [Josef Adamcik](https://josef-adamcik.cz/). The motivation and process is covered in following blog-post: [Let me introduce you to SofleKeyboard - a split keyboard based on Lily58 and Crkbd](https://josef-adamcik.cz/electronics/let-me-introduce-you-sofle-keyboard-split-keyboard-based-on-lily58.html)
+```
 
-Sofle RGB was contributed by [Dane Evans](https://github.com/DaneEvans).
-
-Sofle Choc was designed by [Brian Low](https://github.com/BrianLow)
+The idea would be interesting. But I don't have the time to implement it. So I just stick to the original plan.
 
 
+## Cost estimate
 
+## Project management
+
+## Worklog
+
+### Change choc switches to standard switches
